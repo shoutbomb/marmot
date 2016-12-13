@@ -1,11 +1,11 @@
 WBVardef today=@"select to_char(current_date,'mmddyyyy')";
 WBExport -type=text
-     -file='C:/Shoutbomb/FTP/Holds/holds$[today].txt'
-     -delimiter='|'
-	 -quotechar='"'
-	 -quoteCharEscaping=escape
-     -lineEnding=crlf
-     -encoding=utf8;
+                 -file='C:/Shoutbomb/FTP/Holds/holds$[today].txt'
+                 -delimiter='|'
+		 -quotechar='"'
+		 -quoteCharEscaping=escape
+                 -lineEnding=crlf
+                 -encoding=utf8;
 
 SELECT
     bib_record_property.best_title AS title,
@@ -13,8 +13,8 @@ SELECT
     'i' || rmi.record_num || 'a' AS item_no,
     'p' || rmp.record_num || 'a' AS patron_no, 
     h.pickup_location_code AS pickup_location,
-    irp.barcode AS item_barcode
-	
+	irp.barcode AS item_barcode
+
   FROM sierra_view.hold AS h
     RIGHT JOIN sierra_view.patron_record AS p
       ON ( p.id = h.patron_record_id )
@@ -22,8 +22,8 @@ SELECT
       ON (rmp.id = h.patron_record_id AND rmp.record_type_code = 'p')
     RIGHT JOIN sierra_view.item_record AS i
       ON ( i.id = h.record_id )
-    RIGHT JOIN sierra_view.item_record_property as irp
-      ON (irp.item_record_id = i.record_id)  
+	RIGHT JOIN  sierra_view.item_record_property as irp
+	  ON (irp.item_record_id = i.record_id)
     RIGHT JOIN sierra_view.bib_record_item_record_link AS bil
       ON ( bil.item_record_id = i.id AND bil.bibs_display_order = 0 )
     JOIN sierra_view.bib_record AS b
@@ -38,10 +38,10 @@ SELECT
       ON ( rmi.id = i.id AND rmi.record_type_code = 'i')
 
   WHERE
-    h.status in ('b','i')    
-    AND i.item_status_code = '!'
+    h.status in ('b','i','0')    
+    AND i.item_status_code in ('!','#')
     AND h.pickup_location_code Is not null
-    AND NOW() - rmi.record_last_updated_gmt > interval '3' hour
-	
+	AND NOW() - rmi.record_last_updated_gmt > interval '3' hour
+
   ORDER BY
     patron_no;
