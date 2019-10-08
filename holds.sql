@@ -13,7 +13,8 @@ SELECT
     'i' || rmi.record_num || 'a' AS item_no,
     'p' || rmp.record_num || 'a' AS patron_no, 
     h.pickup_location_code AS pickup_location,
-	irp.barcode AS item_barcode
+    irp.barcode AS item_barcode,
+    h.id AS hold_id
 
   FROM sierra_view.hold AS h
     RIGHT JOIN sierra_view.patron_record AS p

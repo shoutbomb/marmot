@@ -18,8 +18,8 @@ SELECT
      nullif (count(ih.id),0)                                        AS item_holds,
      nullif (count(bh.id),0)                                        AS bib_holds,
      c.renewal_count                                                AS renewals,
-     'b' || rmb.record_num || 'a'                                   AS bib_no
-     
+     'b' || rmb.record_num || 'a'                                   AS bib_no,
+     c.id                                                           AS checkout_id
          
   FROM sierra_view.checkout AS c
      RIGHT JOIN sierra_view.patron_record AS p
@@ -46,9 +46,9 @@ SELECT
        ON ( rmb.id = b.id AND rmb.record_type_code = 'b')
        
   WHERE
-    (c.due_gmt::date - current_date) = 3
+    (c.due_gmt::date - current_date) IN (0,1,2,3)
 
-  GROUP BY 1,2,3,4,5,6,7,10,11
+  GROUP BY 1,2,3,4,5,6,7,10,11,12
 
   ORDER BY
       patron_no;
