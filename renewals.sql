@@ -1,12 +1,3 @@
-WBVardef today=@"select to_char(current_date,'mmddyyyy')";
-WBExport -type=text
-                 -file='c:/Shoutbomb/FTP/Renewals/renew$[today].txt'
-                 -delimiter='|'
-                 -quotechar='"'
-                 -quoteCharEscaping=escape
-                 -lineEnding=crlf
-                 -encoding=utf8;
-                 
 SELECT
      'p' || rmp.record_num || 'a'                                   AS patron_no,
      replace(ib.field_content,' ','')                               AS item_barcode,
@@ -19,8 +10,8 @@ SELECT
      nullif (count(bh.id),0)                                        AS bib_holds,
      c.renewal_count                                                AS renewals,
      'b' || rmb.record_num || 'a'                                   AS bib_no,
-     c.id                                                           AS checkout_id
-         
+	 c.id															AS checkout_id,
+	 v.barcode														AS patron_barcode
   FROM sierra_view.checkout AS c
      RIGHT JOIN sierra_view.patron_record AS p
        ON ( p.id = c.patron_record_id )
@@ -30,7 +21,9 @@ SELECT
         ON ( i.id = c.item_record_id )
      JOIN sierra_view.record_metadata AS rmi    
         ON ( rmi.id = i.id AND rmi.record_type_code = 'i')
-     JOIN sierra_view.varfield AS ib
+     join sierra_view.varfield pva
+     on p.id = pva.record_id
+        JOIN sierra_view.varfield AS ib
       ON ( ib.record_id = i.id AND ib.varfield_type_code = 'b')
      JOIN sierra_view.bib_record_item_record_link AS bil
        ON ( bil.item_record_id = i.id)
@@ -44,11 +37,12 @@ SELECT
        ON (ih.record_id = i.id and ih.status = '0')         
      LEFT JOIN sierra_view.record_metadata as rmb
        ON ( rmb.id = b.id AND rmb.record_type_code = 'b')
-       
+	 LEFT JOIN sierra_view.patron_view as v
+	   ON (v.id = c.patron_record_id)
   WHERE
-    (c.due_gmt::date - current_date) IN (0,1,2,3)
-
-  GROUP BY 1,2,3,4,5,6,7,10,11,12
-
+    (c.due_gmt::date - current_date) = 3
+    and pva.varfield_type_code = 'w'
+    and pva.field_content in ('s','vs','v')
+  GROUP BY 1,2,3,4,5,6,7,10,11,12,13
   ORDER BY
       patron_no;
